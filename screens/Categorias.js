@@ -3,8 +3,9 @@ import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, Modal, Pres
 import { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import * as ImagePicker from 'react-native-image-picker';
+//import * as ImagePicker from 'react-native-image-picker';
 //import * as DocumentPicker from 'react-native-document-picker';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function Categorias({ navigation }) {
 
@@ -12,21 +13,18 @@ export default function Categorias({ navigation }) {
     const [descripcion, setDescripcion] = useState("");
     const [modalVisible, setModalVisible] = useState(false);
     const [dataCategoria, setDataCategoria] = useState([]);
-    const [imageSource, setImageSource] = useState(null);
+    const [imagen, setImagen] = useState(null);
     
     const options = { title: 'Selecciona una imagen', storageOptions: { skipBackup: true, path: 'images', }, };
 
     const handleCreate = async () => {
 
-
+        console.log("Antes de crear el formData")
+        console.log(imagen)
         const formData = new FormData();
         formData.append('nombreCategoria', categoria);
         formData.append('descripcionCategoria', descripcion);
-        formData.append('imagenCategoria', {
-            uri: imageSource.uri,
-            name: imageSource.name,
-            type: imageSource.type,
-          });
+        formData.append('imagenCategoria', imagen);
 
         try {
             //utilizar la direccion IP del servidor y no localhost
@@ -45,7 +43,7 @@ export default function Categorias({ navigation }) {
                 Alert.alert('Error', data.error);
             }
         } catch (error) {
-            console.error(error, "Error desde Catch en handle create");
+            console.error(error, "Error desde Catch en handle create errorazo:c");
             Alert.alert('Error', 'Ocurrió un error al intentar guardar' + error);
         }
     };
@@ -102,24 +100,9 @@ export default function Categorias({ navigation }) {
           Alert.alert('Error', 'Ocurrió un error al iniciar sesión con bryancito');
         }
       };
-
-      /*const openImagePicker = () => {
-        ImagePicker.launchImageLibrary(options, (response) => {
-            if (response.didCancel) {
-                console.log('Usuario canceló la selección de la imagen');
-
-            }
-            else if (response.error) {
-                console.error('Error al seleccionar la imagen:', response.error);
-            }
-            else { // La imagen fue seleccionada exitosamente
-                const source = { uri: response.uri };
-                setImageSource(source);
-            }
-        });
-    }*/
-   
-    const pickImage = async () => {
+       
+   /**
+     const pickImage = async () => {
         try {
           const result = await ImagePicker.pick({
             type: [ImagePicker.types.images],
@@ -134,6 +117,26 @@ export default function Categorias({ navigation }) {
           }
         }
       };
+
+    */
+      const openGalery = async () => {
+        // No permissions request is necessary for launching the image library
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.All,
+            allowsEditing: true,
+            aspect: [8, 8],
+            quality: 1,
+        });
+
+        console.log("valor de result 1", result);
+
+        if (!result.canceled) {
+            console.log("En el if de !result.canceled")
+            console.log("Valor de Result 2", result.assets)
+            
+            setImagen(result.assets);
+        }
+    };
 
     return (
 
@@ -164,7 +167,7 @@ export default function Categorias({ navigation }) {
                             <Text>Seleccionar imagen</Text>
                             <TouchableOpacity style={styles.loadImageButton} 
                             title="Escoge una foto de tu librería" 
-                            onPress={pickImage}>
+                            onPress={openGalery}>
                         <Text style={styles.buttonText}>Cargar Imagen</Text>
                     </TouchableOpacity>
                             <TouchableOpacity style={styles.button} onPress={handleCreate}><Text style={styles.buttonText}>Crear nueva categoria</Text></TouchableOpacity>
