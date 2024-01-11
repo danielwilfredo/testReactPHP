@@ -133,9 +133,13 @@ export default function Categorias({ navigation }) {
         if (!result.canceled) {
             console.log("En el if de !result.canceled")
             console.log("Valor de Result 2", result.assets)
+            const response = await fetch(result.assets[0].uri);
+            const blob = await response.blob();
             
-            setImagen(result.assets);
+            setImagen(blob);
+
         }
+        console.log("Valor de imagen copn blob supuestamente", imagen)
     };
 
     return (
