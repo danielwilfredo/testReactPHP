@@ -1,4 +1,3 @@
-
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, Modal, Pressable, Image } from 'react-native';
 import { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
@@ -14,44 +13,44 @@ export default function Categorias({ navigation }) {
     const [modalVisible, setModalVisible] = useState(false);
     const [dataCategoria, setDataCategoria] = useState([]);
     const [imagen, setImagen] = useState(null);
-    
-    const options = { title: 'Selecciona una imagen', storageOptions: { skipBackup: true, path: 'images', }, };
 
     const handleCreate = async () => {
 
-        console.log("Antes de crear el formData")
-        console.log(imagen)
         const formData = new FormData();
         formData.append('nombreCategoria', categoria);
         formData.append('descripcionCategoria', descripcion);
-        formData.append('imagenCategoria', imagen);
+        formData.append('imagenCategoria', imagen.assets);   
+console.log(" \n\n-------------- Este es el formDATA ----------\n\n")        
+console.log("FormData_parts ", formData._parts)
+console.log("\n\n -------------- FIN formDATA ----------\n\n")     
+console.log("imagen asest \n", imagen.assets)   
 
         try {
             //utilizar la direccion IP del servidor y no localhost
+            console.log("Antes de hacer el fetch \n")
             const response = await fetch('http://10.20.0.88/coffeeshop/api/services/admin/categoria.php?action=createRow', {
                 method: 'POST',
                 body: formData
             });
-
+console.log("Antes del response de data \n", response)
             const data = await response.json();
-
+            console.log("Antes del response de data")
+console.log( "data despues del response" ,data);
             if (data.status) {
                 Alert.alert('Datos Guardados correctamente');
             } else {
                 console.log(data);
-                // Alert the user about the error
                 Alert.alert('Error', data.error);
             }
         } catch (error) {
-            console.error(error, "Error desde Catch en handle create errorazo:c");
-            Alert.alert('Error', 'Ocurrió un error al intentar guardar' + error);
+            console.error("Error handle create", error);
+            console.log(formData)
+            Alert.alert('Ocurrió un error al intentar guardar la categoria');
         }
     };
 
 
     const getCategorias = async () => {
-
-
         try {
             //utilizar la direccion IP del servidor y no localhost
 
@@ -62,7 +61,7 @@ export default function Categorias({ navigation }) {
 
             const data = await response.json();
 
-            console.log(data)
+            console.log("data al obtener categorias  \n", data)
             if (data.status) {
                 setDataCategoria(data.dataset)
             } else {
@@ -119,10 +118,11 @@ export default function Categorias({ navigation }) {
       };
 
     */
+   /*
       const openGalery = async () => {
         // No permissions request is necessary for launching the image library
         let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.All,
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             aspect: [8, 8],
             quality: 1,
@@ -136,12 +136,34 @@ export default function Categorias({ navigation }) {
             const response = await fetch(result.assets[0].uri);
             const blob = await response.blob();
             
-            setImagen(blob);
+            setImagen( result.assets);
 
         }
-        console.log("Valor de imagen copn blob supuestamente", imagen)
     };
+    
+    */
 
+    const openGalery = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: false,
+            aspect: [8, 8],
+            quality: 1,
+        });
+    
+        if (!result.canceled) {
+            const response = await fetch(result.assets[0].uri);
+            const blob = await response.blob();
+            console.log("Antes de setear la imagen ----------- \n")
+            console.log(result.assets)
+            console.log("Antes de setear la imagen assets[0] ----------- \n")
+            console.log(result.assets[0])
+            console.log("Antes de setear la imagen ----------- \n\n")
+            console.log("blob con data", blob._data)
+            
+            setImagen(result);
+        }
+    };
     return (
 
         <>
@@ -188,7 +210,10 @@ export default function Categorias({ navigation }) {
 
             <Text style={styles.textStyle}>Categorias:</Text>
             {dataCategoria.map((categoria) => (
-                <View>
+
+!categoria ? <Text> No hay categorias</Text> : 
+
+               (<View>
                     <View style={styles.vista}>
                         <View key={categoria.id_categoria}>
                             <Text >{categoria.nombre_categoria}</Text>
@@ -196,7 +221,7 @@ export default function Categorias({ navigation }) {
                         </View>
 
                     </View>
-                </View>
+                </View>)
             ))}
 
             <View>
@@ -315,11 +340,6 @@ display:"flex",
         backgroundColor:"green",
        width:250,
        padding:15
-
-
     }
-
-
     
 });
-
